@@ -18,5 +18,5 @@ I have a [poster](artwork_type)
 [18x24](artwork_size#width_and_height)
 * provide_artwork_size/width_and_height
 
-< Which one of these frames do you like? [FRAME_CAROUSEL_LIST](frame_list)
+< Which one of these frames do you like –[FRAME_CAROUSEL_LIST](frame_list)
 * request_frame
