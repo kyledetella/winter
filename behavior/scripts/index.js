@@ -118,6 +118,20 @@ exports.handle = (client) => {
     }
   })
 
+  const getItemCount = client.createStep({
+    satisfied() {
+      // Determine if we already have determined artwork size
+      const itemCount = client.getConversationState().itemCount
+
+      return (itemCount)
+    },
+
+    prompt() {
+      client.addResponse('welcome/request_item_count')
+      client.done()
+    }
+  })
+
   client.runFlow({
     classifications: {
       // map inbound message classifications to names of streams
@@ -125,12 +139,14 @@ exports.handle = (client) => {
       'provide_artwork_size/width_and_height': 'getArtwork',
       'provide_artwork_size/width': 'getArtwork',
       'provide_artwork_size/height': 'getArtwork',
+      'request_framing_service': 'getItemCount',
     },
     autoResponses: {
       // configure responses to be automatically sent as predicted by the machine learning model
     },
     streams: {
       main: 'onboarding',
+      getItemCount: [getItemCount],
       getArtwork: [getArtworkType, getArtworkSize],
       onboarding: [welcome],
       end: [untrained],
