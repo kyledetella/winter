@@ -1,1 +1,1 @@
-web: node logic-server/.
+web: node ./logic-server.js
