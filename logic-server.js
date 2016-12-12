@@ -6,7 +6,7 @@ const InitClient = require('initai-node')
 const server = restify.createServer()
 const PORT = process.env.PORT || 4044
 
-const projectLogicScript = require('../behavior/scripts')
+const projectLogicScript = require('./behavior/scripts')
 
 server.use(restify.bodyParser())
 
