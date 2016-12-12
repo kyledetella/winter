@@ -81,6 +81,7 @@ server.post('/webhooks/logic', (req, res, next) => {
   const eventType = req.body.event_type
   const eventData = req.body.data
 
+  console.log('[INIT.AI]', eventType)
   if (eventType === 'LogicInvocation') {
     const initNodeClient = InitClient.create(eventData, {
       succeed(result) {
