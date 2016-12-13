@@ -1,3 +1,9 @@
+/**
+ * Example web server to handle Message Send/Receive Webhooks from Init.ai
+ *
+ * This feature is still in "alpha" and is subject to change.
+ */
+
 'use strict'
 
 const restify = require('restify')
@@ -17,10 +23,7 @@ function sendLogicResult(invocationPayload, result) {
   const requestConfig = {
     headers: {
       'accept': 'application/json',
-      // TODO: This needs to use the auth token provided in the invocation. If not, we should remove that token from the payload and determine a strategy
-      // for developers to include this token when bootstrapping this application
-      // 'authorization': `Bearer ${invocationData.auth_token}`,
-      'authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBfaWQiOiJiN2ZhYjk5NC02ZTA1LTRlYjgtN2I2Yy05MjQ1ZWMyYjQwNmUiLCJpYXQiOjE0ODE1MDUxODcsImlzcyI6InBsYXRmb3JtIiwidHlwZSI6InJlbW90ZSJ9.25NKt_6xnmWg5PEal6DHhNTXJ5XAJWx-5yMLvO2UV_8`,
+      'authorization': `Bearer ${invocationData.auth_token}`,
       'content-type': 'application/json',
     },
     method: 'POST',
@@ -31,15 +34,14 @@ function sendLogicResult(invocationPayload, result) {
     invocation: {
       invocation_id: invocationData.invocation_id,
       app_id: invocationPayload.current_application.id,
-      app_user_id: Object.keys(invocationPayload.users)[0], // TODO: This should be configurable by the developer per-invocation
+      app_user_id: Object.keys(invocationPayload.users)[0],
     },
     result: result,
   }
 
   client.post(requestConfig, (err, req) => {
     if (err) {
-      console.log('ERR', err)
-      // TODO: Handle error
+      console.error(err)
     }
 
     req.on('result', (err, res) => {
@@ -51,7 +53,7 @@ function sendLogicResult(invocationPayload, result) {
       })
 
       res.on('end', () => {
-        console.log(res.body)
+        console.log(`Result sent successfully`, res.body)
       })
     })
 
@@ -60,41 +62,46 @@ function sendLogicResult(invocationPayload, result) {
   })
 }
 
+/**
+ * Log any uncaught exceptions for easier debugging
+ */
 server.on('uncaughtException', (req, res, route, err) => {
-  // TODO: Write custom logger output
   console.error('uncaughtException', err.stack)
+
   res.send(500)
 })
 
 /**
- *
- *
- * TODO: ------------------------------------------------
- * The "result" endpoint requires the remote JWT – this will
- * require the developer to provide it as an env var.
- *
- * Should it not just use the jwt from the payload?
- * ______________________________________________________
- *
+ * Add a POST request handler for webhook invocations
  */
-server.post('/webhooks/logic', (req, res, next) => {
+server.post('/', (req, res, next) => {
   const eventType = req.body.event_type
   const eventData = req.body.data
 
+  // Both LogicInvocation and MessageOutbound events will be sent to this handler
   if (eventType === 'LogicInvocation') {
+    // The `create` factory expects and the event data and an Object modeled
+    // to match AWS Lambda's interface which exposes a `succeed` function.
+    // By default, the `done` method on the client instance will call this handler
     const initNodeClient = InitClient.create(eventData, {
       succeed(result) {
         sendLogicResult(eventData.payload, result)
       }
     })
 
+    // An instance of the client needs to be provided to the `handle` method
+    // exported from behavior/scripts/index.js to emulate the Lambda pattern
     projectLogicScript.handle(initNodeClient)
   }
 
+  // Immediately return a 200 to acknowledge receipt of the Webhook
   res.send(200)
 })
 
-server.get('/ping', (req, res) => {
+/**
+ * Add a "heartbeat" endpoint to ensure server is up
+ */
+server.get('/heartbeat', (req, res) => {
   res.send('ok')
 })
 

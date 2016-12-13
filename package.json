@@ -5,7 +5,7 @@
   "main": "behavior/scripts/index.js",
   "scripts": {
     "start": "initai-dev-server",
-    "logicServer:dev": "nodemon logic-server/."
+    "logicServer:dev": "nodemon server"
   },
   "author": "<my-name> <<my-email-address>>",
   "license": "UNLICENSED",
