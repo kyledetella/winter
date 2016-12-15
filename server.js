@@ -20,6 +20,8 @@ function sendLogicResult(invocationPayload, result) {
   const invocationData = invocationPayload.invocation_data
   const client = restify.createClient({url: invocationData.api.base_url})
 
+  console.log(':::::::::::::::', invocationData.auth_token)
+
   const requestConfig = {
     headers: {
       'accept': 'application/json',
