@@ -26,6 +26,7 @@ exports.handle = (client) => {
     // extractInfo() {...}
 
     prompt() {
+      console.log('>>>>>>>>>>>>>>>>', client.getFirstEntityWithRole(client.getMessagePart(), 'artwork_type'))
       const artworkType = client.getFirstEntityWithRole(client.getMessagePart(), 'artwork_type').value
       const newArtwork = client.getConversationState().artwork || {}
 
